@@ -1,36 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Confirmed</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EcoByt — Email Confirmed</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+    :root { --bg:#0f172a; --card:#111827; --ok:#10b981; --err:#ef4444; --muted:#9ca3af; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; background:linear-gradient(180deg,#0b1023,#0f172a);}
+    .card { width:min(680px,92vw); background:#111827; color:#e5e7eb; border:1px solid #1f2937; border-radius:18px; padding:28px 24px; box-shadow:0 10px 30px rgba(0,0,0,.35);}
+    h1 { margin:0 0 6px; font:700 22px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    p { margin:10px 0; font:400 14px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#cbd5e1;}
+    code, .mono { font:500 13px ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace; }
+    .muted { color:var(--muted); }
+    .row { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:10px 14px; border-radius:10px; text-decoration:none; cursor:pointer; user-select:none;
+      border:1px solid #374151; background:#1f2937; color:#e5e7eb;
     }
-    .container {
-      background: white;
-      padding: 20px 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    h1 {
-      color: #4CAF50;
-    }
+    .btn:hover { background:#243042; }
+    .btn.primary { background:#334155; border-color:#475569; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font:600 12px/1 mono; }
+    .ok { background:rgba(16,185,129,.15); color:#34d399; border:1px solid rgba(16,185,129,.35); }
+    .err{ background:rgba(239,68,68,.14); color:#fb7185; border:1px solid rgba(239,68,68,.35); }
+    .small { font-size:12px; }
+    hr { border:none; border-top:1px solid #1f2937; margin:18px 0; }
+    .hidden { display:none; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>✅ Email Confirmed</h1>
-    <p>Your email has been successfully verified. You may now return to the app.</p>
-  </div>
+  <main class="card">
+    <h1>EcoByt</h1>
+    <p class="muted small">Account email confirmation</p>
+
+    <div id="ok" class="hidden">
+      <div class="pill ok mono">Success</div>
+      <p>Your email has been confirmed. You can now return to the EcoByt app and sign in.</p>
+      <div class="row">
+        <a id="open-app" class="btn primary" href="#">Open the app</a>
+        <button id="copy-link" class="btn">Copy sign-in URL</button>
+      </div>
+      <p id="debug-ok" class="muted small mono"></p>
+    </div>
+
+    <div id="err" class="hidden">
+      <div class="pill err mono">Problem</div>
+      <p>We couldn’t verify your link. It may have expired or been used already.</p>
+      <p class="small">Please return to the app and request a new confirmation email.</p>
+      <p id="debug-err" class="muted small mono"></p>
+    </div>
+
+    <hr />
+    <p class="muted small">Tip: you can close this tab after you’re done.</p>
+  </main>
+
+  <script>
+    // Parse the URL hash from Supabase (e.g. #access_token=...&type=signup&...)
+    const params = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const type = params.get('type');           // signup | invite | magiclink | recovery | email_change
+    const token = params.get('access_token');  // present on success
+
+    const el = (id) => document.getElementById(id);
+    const okBox  = el('ok');
+    const errBox = el('err');
+
+    // Optional: deep link back to app (desktop/web just re-opens the same domain)
+    // For now we point to your main site root; change if you add a custom scheme.
+    const appHref = 'https://raczxoue.github.io/';
+
+    function showSuccess() {
+      okBox.classList.remove('hidden');
+      el('open-app').href = appHref;
+      const debug = [];
+      if (type)  debug.push('type=' + type);
+      if (token) debug.push('access_token (present)');
+      el('debug-ok').textContent = debug.join('  ·  ');
+      el('copy-link').addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(location.href);
+          el('copy-link').textContent = 'Copied!';
+          setTimeout(()=> el('copy-link').textContent='Copy sign-in URL', 1600);
+        } catch {}
+      });
+    }
+
+    function showError(reason) {
+      errBox.classList.remove('hidden');
+      el('debug-err').textContent = reason || 'No extra details.';
+    }
+
+    // GoTrue (Supabase Auth) has already verified on their side and redirected here.
+    // If we have an access_token in the hash, we treat it as success.
+    if (token) {
+      showSuccess();
+      // Clean up the hash to avoid token lingering in history
+      history.replaceState(null, document.title, location.pathname);
+    } else {
+      const err = params.get('error_description') || params.get('error') || 'Missing token';
+      showError(err);
+    }
+  </script>
 </body>
 </html>
