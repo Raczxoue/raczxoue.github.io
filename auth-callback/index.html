@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoByt — Email Confirmed</title>
+
+  <!-- Strong “don’t index cachey copies” hints (browsers mostly ignore for caching,
+       but good hygiene). GitHub Pages CDN still does ETag-based caching. -->
+  <meta name="robots" content="noindex,nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <style>
+    :root { --bg:#f7f7fb; --ink:#111827; --muted:#6b7280; --accent:#1f2937; --ok:#2e7d32; --btn:#1f2937; }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      background:linear-gradient(180deg,#0b1023,#0f172a);
+      color:#e5e7eb; font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .card {
+      width:min(680px,92vw); background:#fff; color:#0f172a;
+      border:1px solid #e5e7eb; border-radius:18px; padding:28px 24px;
+      box-shadow:0 10px 30px rgba(0,0,0,.05); text-align:center;
+    }
+    h1 { margin:0 0 8px; font-size:22px; color:var(--accent); }
+    p  { margin:8px 0 10px; color:var(--muted); }
+    .btn {
+      display:inline-block; margin-top:14px; padding:10px 16px; border-radius:10px;
+      background:var(--btn); color:#fff; text-decoration:none; font-weight:600; user-select:none;
+    }
+    .btn:hover { filter:brightness(0.95); }
+    .ok-mark {
+      width:44px; height:44px; margin:0 auto 12px; border-radius:999px; display:grid; place-items:center;
+      background:#eaf6ed; color:var(--ok); font-size:24px;
+    }
+    .hidden { display:none; }                    /* default: hide both panels */
+    .row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    code { font:13px ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace; color:#374151; }
+    .muted { color:var(--muted); font-size:12px; }
+  </style>
+</head>
+<body>
+
+  <!-- Success (hidden by default) -->
+  <section id="ok" class="card hidden" aria-live="polite">
+    <div class="ok-mark">✓</div>
+    <h1>Email confirmed!</h1>
+    <p>Thanks! Your EcoByt account is ready to use.</p>
+    <a id="open-app" class="btn" href="https://raczxoue.github.io/">Open EcoByt</a>
+    <p class="muted">You can close this tab if you opened it from the app.</p>
+  </section>
+
+  <!-- Error / opened directly (also hidden by default) -->
+  <section id="err" class="card hidden" aria-live="polite">
+    <h1>One more step</h1>
+    <p>This page must be opened from the confirmation link we emailed you.</p>
+    <div class="row">
+      <a class="btn" href="https://raczxoue.github.io/">Open EcoByt</a>
+    </div>
+    <p id="debug-err" class="muted"></p>
+  </section>
+
+  <script>
+    // Small helpers
+    const $ = (id) => document.getElementById(id);
+    const okBox  = $('ok');
+    const errBox = $('err');
+
+    // Where to send users when they click “Open EcoByt”
+    const apphref = 'https://raczxoue.github.io/';
+    $('open-app').href = apphref;
+
+    // Parse hash strictly and defensively
+    const hash = String(location.hash || '');
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+
+    // Require a *real* access_token (not just type=)
+    const token = params.get('access_token');
+    const type  = params.get('type'); // signup | magiclink | recovery | email_change | reauthentication
+
+    // Extra guard: only treat as success when the hash *actually contains* "access_token="
+    const hasTokenInHash = /(^|[&#])access_token=/.test(hash);
+
+    function show(el){ el.classList.remove('hidden'); }
+
+    function showSuccess(){
+      // Clean URL so the token doesn't linger if user keeps the tab
+      try { history.replaceState(null, document.title, location.pathname); } catch(_) {}
+      show(okBox);
+    }
+
+    function showError(reason){
+      show(errBox);
+      const msg = (reason && String(reason).trim()) ? reason : 'No extra details.';
+      $('debug-err').textContent = msg;
+    }
+
+    // Decide which panel to show
+    const VALID_TYPES = new Set(['signup','magiclink','recovery','email_change','reauthentication']);
+    if (hasTokenInHash && token && (!type || VALID_TYPES.has(type))) {
+      showSuccess();
+    } else {
+      const err =
+        params.get('error_description') ||
+        params.get('error') ||
+        (!hasTokenInHash ? 'Opened directly (no token present).' : 'Invalid/expired token.');
+      showError(err);
+    }
+  </script>
+</body>
+</html>
