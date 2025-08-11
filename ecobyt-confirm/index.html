@@ -5,77 +5,102 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>EcoByt — Email Confirmed</title>
   <style>
-    :root { --bg:#0f172a; --card:#111827; --ok:#10b981; --err:#ef4444; --muted:#9ca3af; }
-    * { box-sizing: border-box; }
-    body { margin:0; min-height:100vh; display:grid; place-items:center; background:linear-gradient(180deg,#0b1023,#0f172a);}
-    .card { width:min(680px,92vw); background:#111827; color:#e5e7eb; border:1px solid #1f2937; border-radius:18px; padding:28px 24px; box-shadow:0 10px 30px rgba(0,0,0,.35);}
-    h1 { margin:0 0 6px; font:700 22px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    p { margin:10px 0; font:400 14px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:#cbd5e1;}
+    :root { --bg:#f7f7fb; --card:#ffffff; --ink:#111827; --muted:#6b7280; --brand:#1f2937; --accent:#3b5d53; }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      background:var(--bg);
+      font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+    }
+    .card {
+      width:min(680px,92vw); background:var(--card); border:1px solid #e5e7eb;
+      border-radius:18px; padding:28px 24px; box-shadow:0 10px 30px rgba(0,0,0,.05);
+      text-align:center;
+    }
+    h1 { margin:8px 0 6px; font-size:22px; font-weight:800; color:var(--accent); }
+    p { margin:6px 0; font-size:15px; color:#4b5563; }
     code, .mono { font:500 13px ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace; }
     .muted { color:var(--muted); }
-    .row { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
+    .row { margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
     .btn {
-      display:inline-flex; align-items:center; justify-content:center;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
       padding:10px 14px; border-radius:10px; text-decoration:none; cursor:pointer; user-select:none;
-      border:1px solid #374151; background:#1f2937; color:#e5e7eb;
+      border:1px solid #374151; background:#1f2937; color:white;
+      transition:transform .02s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
     }
-    .btn:hover { background:#243042; }
-    .btn.primary { background:#334155; border-color:#475569; }
-    .pill { display:inline-block; padding:4px 10px; border-radius:999px; font:600 12px/1 mono; }
-    .ok { background:rgba(16,185,129,.15); color:#34d399; border:1px solid rgba(16,185,129,.35); }
-    .err{ background:rgba(239,68,68,.14); color:#fb7185; border:1px solid rgba(239,68,68,.35); }
+    .btn:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(17,24,39,.18); }
+    .btn.secondary { background:#eef2f7; color:#111827; border-color:#c9d2e3; }
     .small { font-size:12px; }
-    hr { border:none; border-top:1px solid #1f2937; margin:18px 0; }
-    .hidden { display:none; }
+    .hidden { display:none !important; }
+    .ok-icon { width:26px; height:26px; border-radius:50%; background:#2f765f; display:inline-grid; place-items:center; color:#fff; }
+    .err-icon { width:26px; height:26px; border-radius:50%; background:#a4282c; display:inline-grid; place-items:center; color:#fff; }
+    a.mono { color:#0f172a; }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>EcoByt</h1>
-    <p class="muted small">Account email confirmation</p>
-
+  <div class="card">
+    <!-- SUCCESS PANEL (hidden by default) -->
     <div id="ok" class="hidden">
-      <div class="pill ok mono">Success</div>
-      <p>Your email has been confirmed. You can now return to the EcoByt app and sign in.</p>
+      <div class="ok-icon" aria-hidden="true">✓</div>
+      <h1>Email confirmed!</h1>
+      <p>Thanks! Your EcoByt account is ready to use.</p>
       <div class="row">
-        <a id="open-app" class="btn primary" href="#">Open the app</a>
-        <button id="copy-link" class="btn">Copy sign-in URL</button>
+        <a id="open-app" class="btn">Open EcoByt</a>
+        <button id="copy-link" class="btn secondary mono small" title="Copy this URL for debugging">
+          Copy sign-in URL
+        </button>
       </div>
-      <p id="debug-ok" class="muted small mono"></p>
+      <p id="debug-ok" class="mono muted small"></p>
+      <p class="muted small">You can close this tab if you opened it from the app.</p>
     </div>
 
-    <div id="err" class="hidden">
-      <div class="pill err mono">Problem</div>
-      <p>We couldn’t verify your link. It may have expired or been used already.</p>
-      <p class="small">Please return to the app and request a new confirmation email.</p>
-      <p id="debug-err" class="muted small mono"></p>
+    <!-- ERROR PANEL (shown when token missing or invalid) -->
+    <div id="err" class="">
+      <div class="err-icon" aria-hidden="true">!</div>
+      <h1>Problem confirming</h1>
+      <p>We didn’t find a valid confirmation token in the link.</p>
+      <p id="debug-err" class="mono muted small"></p>
+      <div class="row">
+        <a id="retry" class="btn secondary" href="https://raczxoue.github.io/">Go to EcoByt</a>
+      </div>
     </div>
-
-    <hr />
-    <p class="muted small">Tip: you can close this tab after you’re done.</p>
-  </main>
+  </div>
 
   <script>
-    // Parse the URL hash from Supabase (e.g. #access_token=...&type=signup&...)
-    const params = new URLSearchParams(location.hash.replace(/^#/, ''));
-    const type = params.get('type');           // signup | invite | magiclink | recovery | email_change
-    const token = params.get('access_token');  // present on success
+    // Parse URL hash & query into a single map
+    function parseParams(url) {
+      const out = new URLSearchParams();
+      const u = new URL(url, location.origin);
+      // hash params
+      const h = u.hash.startsWith('#') ? u.hash.slice(1) : u.hash;
+      new URLSearchParams(h).forEach((v,k)=>out.set(k,v));
+      // query params (don’t overwrite hash)
+      new URLSearchParams(u.search).forEach((v,k)=>{ if(!out.has(k)) out.set(k,v); });
+      return out;
+    }
 
-    const el = (id) => document.getElementById(id);
+    const params = parseParams(location.href);
+    const type   = params.get('type');           // signup | magiclink | recovery | email_change | reauth
+    const token  = params.get('access_token');   // present on success
+
+    const el = id => document.getElementById(id);
     const okBox  = el('ok');
     const errBox = el('err');
 
-    // Optional: deep link back to app (desktop/web just re-opens the same domain)
-    // For now we point to your main site root; change if you add a custom scheme.
-    const appHref = 'https://raczxoue.github.io/';
+    const apphref = 'https://raczxoue.github.io/'; // change if you add a custom app URL later
 
     function showSuccess() {
       okBox.classList.remove('hidden');
-      el('open-app').href = appHref;
-      const debug = [];
-      if (type)  debug.push('type=' + type);
-      if (token) debug.push('access_token (present)');
-      el('debug-ok').textContent = debug.join('  ·  ');
+      errBox.classList.add('hidden');
+      el('open-app').href = apphref;
+
+      const bits = [];
+      if (type) bits.push('type=' + type);
+      if (token) bits.push('access_token (present)');
+
+      el('debug-ok').textContent = bits.join(' • ') || '—';
+
       el('copy-link').addEventListener('click', async () => {
         try {
           await navigator.clipboard.writeText(location.href);
@@ -83,19 +108,20 @@
           setTimeout(()=> el('copy-link').textContent='Copy sign-in URL', 1600);
         } catch {}
       });
+
+      // clean fragment to avoid leaving token in browser history
+      history.replaceState(null, document.title, location.pathname);
     }
 
     function showError(reason) {
+      okBox.classList.add('hidden');
       errBox.classList.remove('hidden');
-      el('debug-err').textContent = reason || 'No extra details.';
+      el('debug-err').textContent = reason || 'Missing token';
     }
 
-    // GoTrue (Supabase Auth) has already verified on their side and redirected here.
-    // If we have an access_token in the hash, we treat it as success.
+    // Decide what to show
     if (token) {
       showSuccess();
-      // Clean up the hash to avoid token lingering in history
-      history.replaceState(null, document.title, location.pathname);
     } else {
       const err = params.get('error_description') || params.get('error') || 'Missing token';
       showError(err);
