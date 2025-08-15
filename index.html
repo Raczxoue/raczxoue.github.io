@@ -1,0 +1,35 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NearByt Links</title>
+  <style>
+    body { margin:0; min-height:100vh; display:grid; place-items:center;
+           background:#0b1023; color:#cfe1ff; font:16px/1.5 system-ui,Segoe UI,Roboto,Arial,sans-serif; }
+    .card { background:#0f172a; padding:28px 32px; border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,.35); max-width:720px }
+    h1 { margin:0 0 6px; font-size:28px }
+    p  { margin:8px 0 18px; color:#b9c7e6 }
+    .row { display:flex; gap:12px; flex-wrap:wrap }
+    a.btn { display:inline-block; padding:12px 18px; border-radius:12px; text-decoration:none; font-weight:700; background:#6650a4; color:#fff }
+    a.ghost { background:#1e293b; color:#cfe1ff; font-weight:600 }
+    small { display:block; opacity:.7; margin-top:16px }
+    code { background:#1e293b; padding:2px 6px; border-radius:6px }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>NearByt</h1>
+    <p>This is the public landing page for NearByt’s auth callback. If you’re confirming your email,
+       the confirmation link from Supabase will open <code>/auth-callback/</code> with a one-time token.</p>
+
+    <div class="row">
+      <a class="btn"   href="/auth-callback/">Open the auth-callback page</a>
+      <a class="btn ghost" href="/ecobyt-confirm/">Legacy: /ecobyt-confirm → /auth-callback</a>
+      <a class="btn ghost" href="/nearbyt-confirm/">Legacy: /nearbyt-confirm → /auth-callback</a>
+    </div>
+
+    <small>Tip: opening <code>/auth-callback/</code> directly (without a token) will show “One more step”, which is expected.</small>
+  </div>
+</body>
+</html>
