@@ -3,10 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>EcoByt — Email Confirmed</title>
+  <title>NearByt — Email Confirmed</title>
 
-  <!-- Strong “don’t index cachey copies” hints (browsers mostly ignore for caching,
-       but good hygiene). GitHub Pages CDN still does ETag-based caching. -->
+  <!-- Keep cache + indexing hints -->
   <meta name="robots" content="noindex,nofollow" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -36,7 +35,7 @@
       width:44px; height:44px; margin:0 auto 12px; border-radius:999px; display:grid; place-items:center;
       background:#eaf6ed; color:var(--ok); font-size:24px;
     }
-    .hidden { display:none; }                    /* default: hide both panels */
+    .hidden { display:none; }
     .row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
     code { font:13px ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace; color:#374151; }
     .muted { color:var(--muted); font-size:12px; }
@@ -44,21 +43,21 @@
 </head>
 <body>
 
-  <!-- Success (hidden by default) -->
+  <!-- Success -->
   <section id="ok" class="card hidden" aria-live="polite">
     <div class="ok-mark">✓</div>
     <h1>Email confirmed!</h1>
-    <p>Thanks! Your EcoByt account is ready to use.</p>
-    <a id="open-app" class="btn" href="https://raczxoue.github.io/">Open EcoByt</a>
+    <p>Thanks! Your NearByt account is ready to use.</p>
+    <a id="open-app" class="btn" href="https://raczxoue.github.io/">Open NearByt</a>
     <p class="muted">You can close this tab if you opened it from the app.</p>
   </section>
 
-  <!-- Error / opened directly (also hidden by default) -->
+  <!-- Error -->
   <section id="err" class="card hidden" aria-live="polite">
     <h1>One more step</h1>
     <p>This page must be opened from the confirmation link we emailed you.</p>
     <div class="row">
-      <a class="btn" href="https://raczxoue.github.io/">Open EcoByt</a>
+      <a class="btn" href="https://raczxoue.github.io/">Open NearByt</a>
     </div>
     <p id="debug-err" class="muted"></p>
   </section>
@@ -69,36 +68,29 @@
     const okBox  = $('ok');
     const errBox = $('err');
 
-    // Where to send users when they click “Open EcoByt”
+    // Where to send users when they click the button
     const apphref = 'https://raczxoue.github.io/';
     $('open-app').href = apphref;
 
-    // Parse hash strictly and defensively
+    // Parse Supabase hash: #access_token=...&type=signup
     const hash = String(location.hash || '');
     const params = new URLSearchParams(hash.replace(/^#/, ''));
 
-    // Require a *real* access_token (not just type=)
+    // Require a real access_token (not just type=)
     const token = params.get('access_token');
     const type  = params.get('type'); // signup | magiclink | recovery | email_change | reauthentication
-
-    // Extra guard: only treat as success when the hash *actually contains* "access_token="
     const hasTokenInHash = /(^|[&#])access_token=/.test(hash);
 
     function show(el){ el.classList.remove('hidden'); }
-
     function showSuccess(){
-      // Clean URL so the token doesn't linger if user keeps the tab
       try { history.replaceState(null, document.title, location.pathname); } catch(_) {}
       show(okBox);
     }
-
     function showError(reason){
       show(errBox);
-      const msg = (reason && String(reason).trim()) ? reason : 'No extra details.';
-      $('debug-err').textContent = msg;
+      $('debug-err').textContent = (reason && String(reason).trim()) ? reason : 'No extra details.';
     }
 
-    // Decide which panel to show
     const VALID_TYPES = new Set(['signup','magiclink','recovery','email_change','reauthentication']);
     if (hasTokenInHash && token && (!type || VALID_TYPES.has(type))) {
       showSuccess();
